@@ -1,0 +1,15 @@
+<html>
+	<head>
+		<title>index</title>
+	</head>
+	<body>
+		<form action="call" method="PUT">
+			{% csrf_token%}
+			<input type="submit" name="call"/>
+		</form>
+		<form action="receiver" method="GET">
+			{% csrf_token%}
+			<input type="submit" name="receiver"/>
+		</form>
+	</body>
+</html>

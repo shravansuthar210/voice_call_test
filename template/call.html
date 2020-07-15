@@ -1,0 +1,73 @@
+{% load static%}
+<html>
+	<head>
+		<title>call</title>
+	</head>
+	<body>
+		<h1>Audio</h1>
+
+		<button id="startRecordingButton">Start call</button>
+		<script src="{% static 'jquery-1.7.1.js' %}" type="text/javascript"></script> 
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+		<script>
+			var startRecordingButton = document.getElementById("startRecordingButton");
+			startRecordingButton.addEventListener("click", function () {
+				var recorder;
+				var audio;
+				navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
+					function record_and_send() {
+						console.log("start")
+					   recorder = new MediaRecorder(stream);
+					   const chunks = [];
+					   recorder.ondataavailable = e => chunks.push(e.data);
+					   recorder.addEventListener("stop",()=>{
+						const audioBlob = new Blob(chunks);
+						console.log("audioBlob",audioBlob)
+						const audioUrl = URL.createObjectURL(audioBlob);
+						console.log("audioUrl",audioUrl)
+						var reader = new FileReader(); 
+						reader.readAsDataURL(audioBlob); 
+						reader.onloadend = function () { 
+							var base64String = reader.result; 
+							console.log('Base64 String - ', base64String); 
+							var data={};
+							data['sender_number']=13;
+							data['receiver_numer']=260;
+							data['voice_array']=base64String;
+							var jsondata=JSON.stringify(data);
+							console.log("jsondata",jsondata)
+							$(document).ready(function(){
+								$.ajax({
+									url:'http://localhost:8000/api/voice_call_test_1/sender_number',
+									type:'POST',
+									dataType:'json',
+									data:jsondata,
+									success: function (data, textStatus, xhr) {  
+										console.log(textStatus);  
+									},error: function (xhr, textStatus, errorThrown) {  
+										console.log('textStatus',textStatus,"xhr",xhr,"errorThrown",errorThrown);
+									}
+								})
+							})
+						} 
+					   })
+					   setTimeout(()=> hy(recorder,audio), 5000);
+					   recorder.start();
+					}
+					function hy(recorder,audio){
+						recorder.stop();
+						try{
+							audio.pause();
+						}catch(exception){
+							console.log("e",exception)
+						}
+						
+					}
+					record_and_send();
+					//setInterval(record_and_send, 5000);
+				});
+				
+			});
+		</script>
+	</body>
+</html>
